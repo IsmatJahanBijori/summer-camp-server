@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const port = process.env.PORT || 5000
 const cors = require('cors')
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 app.use(express.json())
 app.use(cors())
@@ -29,6 +30,15 @@ async function run() {
     const instructorsCollection = client.db("campDB").collection("instructors");
     const usersCollection = client.db("campDB").collection("users");
 
+    
+    // jwt
+    app.post('/jwt', (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.DB_ACCESS_TOKEN, { expiresIn: '1h' });
+      res.send({ token })
+    })
+
+
     // get instructors
     app.get('/instructors', async (req, res) => {
       const result = await instructorsCollection.find().toArray();
@@ -39,9 +49,9 @@ async function run() {
     // post users
     app.post('/users', async (req, res) => {
       const user = req.body;
-      console.log(user)
+      // console.log(user)
       const query = { email: user?.email }
-      console.log(query)
+      // console.log(query)
       const existingUser = await usersCollection.findOne(query);
       if (existingUser) {
         return res.send({ message: 'user already exists' })
@@ -62,7 +72,7 @@ async function run() {
       const filter = { _id: new ObjectId(id) }
       const updateDoc = {
         $set: {
-          role1: 'admin'
+          role: 'admin'
         },
       };
       const result = await usersCollection.updateOne(filter, updateDoc);
@@ -75,7 +85,7 @@ async function run() {
       const filter = { _id: new ObjectId(id) }
       const updateDoc = {
         $set: {
-          role2: 'instructor'
+          role: 'instructor'
         },
       };
       const result = await usersCollection.updateOne(filter, updateDoc);
