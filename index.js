@@ -3,10 +3,26 @@ const app = express()
 const port = process.env.PORT || 5000
 const cors = require('cors')
 const jwt = require('jsonwebtoken');
-require('dotenv').config()
+require('dotenv').config();
+
+//middle ware
 app.use(express.json())
 app.use(cors())
-
+const verifyJWT = async (req, res, next) => {
+  const authorization = req.headers.authorization;
+  if (!authorization) {
+    return res.status(401).send({ error: true, message: 'Unauthorized access' })
+  }
+  const token = authorization.split(' ')[1]
+  jwt.verify(token, process.env.DB_ACCESS_TOKEN, (err, decoded) => {
+    if (err) {
+      return res.status(403).send({ error: true, message: 'Unauthorized access' })
+    }
+    req.decoded = decoded;
+    next();
+  })
+  // console.log(authorization)
+}
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -30,7 +46,7 @@ async function run() {
     const instructorsCollection = client.db("campDB").collection("instructors");
     const usersCollection = client.db("campDB").collection("users");
 
-    
+
     // jwt
     app.post('/jwt', (req, res) => {
       const user = req.body;
@@ -47,6 +63,28 @@ async function run() {
 
 
     // post users
+    // eta ekhon lagbe na
+    // app.post('/users', verifyJWT, async (req, res) => {
+    //   const user = req.body;
+    //   // console.log(user)
+    //   const query = { email: user?.email }
+    //   const decodedUser=req.decoded.user;
+    //   console.log(decodedUser)
+    //   if(user !==decodedUser){
+    //     return res.status(403).send({ error: true, message: 'Forbidden access' })
+    //   }
+    //   // console.log(query)
+    //   const existingUser = await usersCollection.findOne(query);
+    //   if (existingUser) {
+    //     return res.send({ message: 'user already exists' })
+    //   }
+    //   const result = await usersCollection.insertOne(user)
+    //   res.send(result)
+    // })
+
+
+    // post users
+    // uporer ta kaj na korle eta rekhe dibo
     app.post('/users', async (req, res) => {
       const user = req.body;
       // console.log(user)
@@ -60,11 +98,14 @@ async function run() {
       res.send(result)
     })
 
+
     // get users
     app.get('/users', async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
     })
+
+
 
     // admin patch
     app.patch('/users/admin/:id', async (req, res) => {
@@ -92,6 +133,21 @@ async function run() {
       res.send(result)
     })
 
+    // admin email get
+    // verifyjwt kaj na korle soray dibo
+    app.get('/users/admin/:email', verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      if(req.decoded.email !== email){
+         res.send({admin : true})
+      }
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      const result = { admin: user?.role === 'admin' }
+      res.send(result)
+    })
+
+
+    // instructor email get
 
 
 
