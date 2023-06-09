@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const port = process.env.PORT||5000
+const port = process.env.PORT || 5000
 const cors = require('cors')
 require('dotenv').config()
 app.use(express.json())
@@ -26,10 +26,27 @@ async function run() {
     await client.connect();
 
     // instructor collection
-    const instructorsCollection=client.db("campDB").collection("instructors");
+    const instructorsCollection = client.db("campDB").collection("instructors");
+    const usersCollection = client.db("campDB").collection("users");
 
-    app.get('/instructors', async(req, res)=>{
-      const result=await instructorsCollection.find().toArray();
+    // get instructors
+    app.get('/instructors', async (req, res) => {
+      const result = await instructorsCollection.find().toArray();
+      res.send(result)
+    })
+
+
+    // post users
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      console.log(user)
+      const query={email:user?.email}
+      console.log(query)
+      const existingUser=await usersCollection.findOne(query);
+      if(existingUser){
+        return res.send({message: 'user already exists'})
+      }
+      const result=await usersCollection.insertOne(user)
       res.send(result)
     })
     // Send a ping to confirm a successful connection
