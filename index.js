@@ -137,8 +137,8 @@ async function run() {
     // verifyjwt kaj na korle soray dibo
     app.get('/users/admin/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
-      if(req.decoded.email !== email){
-         res.send({admin : true})
+      if (req.decoded.email !== email) {
+        res.send({ admin: true })
       }
       const query = { email: email };
       const user = await usersCollection.findOne(query);
@@ -148,7 +148,17 @@ async function run() {
 
 
     // instructor email get
-
+    // verifyjwt kaj na korle soray dibo
+    app.get('/users/instructor/:email', verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      if (req.decoded.email !== email) {
+        res.send({ instructor: true })
+      }
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      const result = { instructor: user?.role === 'instructor' }
+      res.send(result)
+    })
 
 
     // Send a ping to confirm a successful connection
