@@ -45,12 +45,13 @@ async function run() {
     // instructor collection
     const instructorsCollection = client.db("campDB").collection("instructors");
     const usersCollection = client.db("campDB").collection("users");
+    const classesCollection = client.db("campDB").collection("classes");
 
 
     // jwt
     app.post('/jwt', (req, res) => {
       const user = req.body;
-      const token = jwt.sign(user, process.env.DB_ACCESS_TOKEN, { expiresIn: '1h' });
+      const token = jwt.sign(user, process.env.DB_ACCESS_TOKEN, { expiresIn: '7d' });
       res.send({ token })
     })
 
@@ -137,9 +138,11 @@ async function run() {
     // verifyjwt kaj na korle soray dibo
     app.get('/users/admin/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
+      // console.log("140",email)
       if (req.decoded.email !== email) {
-        res.send({ admin: true })
+        res.send({ admin: false })
       }
+      // console.log("144",req.decoded.email)
       const query = { email: email };
       const user = await usersCollection.findOne(query);
       const result = { admin: user?.role === 'admin' }
@@ -152,7 +155,7 @@ async function run() {
     app.get('/users/instructor/:email', verifyJWT, async (req, res) => {
       const email = req.params.email;
       if (req.decoded.email !== email) {
-        res.send({ instructor: true })
+        res.send({ instructor: false })
       }
       const query = { email: email };
       const user = await usersCollection.findOne(query);
@@ -160,6 +163,13 @@ async function run() {
       res.send(result)
     })
 
+
+    // post classes
+    app.post('/classes', async(req, res)=>{
+      const classes=req.body;
+      const result=await classesCollection.insertOne(classes);
+      res.send(result)
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
