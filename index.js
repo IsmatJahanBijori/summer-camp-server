@@ -165,19 +165,44 @@ async function run() {
 
 
     // post classes
-    app.post('/classes', async(req, res)=>{
-      const classes=req.body;
-      const result=await classesCollection.insertOne(classes);
+    app.post('/classes', async (req, res) => {
+      const classes = req.body;
+      const result = await classesCollection.insertOne(classes);
       res.send(result)
     })
 
+    // TODO for status changed done
+    app.patch('/classes/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          status: 'Approve'
+        },
+      };
+      const result = await classesCollection.updateOne(filter, updateDoc);
+      res.send(result)
+    })
+
+    // TODO for status changed not working: just change the patch into put method
+    app.put('/classes/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDocument = {
+        $set: {
+          status: 'Deny'
+        },
+      };
+      const result = await classesCollection.updateOne(filter, updateDocument);
+      res.send(result)
+    })
 
     //get classes
-    app.get('/classes', async(req, res)=>{
-      const result=await classesCollection.find().toArray();
+    app.get('/classes', async (req, res) => {
+      const result = await classesCollection.find().toArray();
       res.send(result)
     })
-    
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
