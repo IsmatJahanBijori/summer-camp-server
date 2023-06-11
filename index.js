@@ -164,6 +164,9 @@ async function run() {
     })
 
 
+
+
+
     // post classes
     app.post('/classes', async (req, res) => {
       const classes = req.body;
@@ -171,7 +174,8 @@ async function run() {
       res.send(result)
     })
 
-    // TODO for status changed done
+
+    //  for status changed done
     app.patch('/classes/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
@@ -184,7 +188,7 @@ async function run() {
       res.send(result)
     })
 
-    // TODO for status changed not working: just change the patch into put method
+    //  for status changed not working: just change the patch into put method
     app.put('/classes/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
@@ -200,6 +204,16 @@ async function run() {
     //get classes
     app.get('/classes', async (req, res) => {
       const result = await classesCollection.find().toArray();
+      res.send(result)
+    })
+
+
+    //get classes for one email
+    //TODO client e my classes e kaj na korle delete kore dibo
+    app.get('/classes/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email }
+      const result = await classesCollection.find(query).toArray();
       res.send(result)
     })
 
